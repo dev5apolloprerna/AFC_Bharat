@@ -39,8 +39,7 @@
             "Database\\Seeders\\": "database/seeders/"
         },
             "files": [
-              "app/Helpers/anvixa_paths.php",
-              "app/Helpers/anvixa_uploads.php"
+                  "app/Helpers/path_helper.php"
             ]
     },
     "autoload-dev": {
