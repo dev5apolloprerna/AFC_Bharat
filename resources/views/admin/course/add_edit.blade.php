@@ -25,7 +25,7 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
-                            <form action="{{ isset($course) ? route('admin.course.update', $course->course_id) : route('admin.course.store') }}" method="POST">
+                            <form action="{{ isset($course) ? route('admin.course.update', $course->course_id) : route('admin.course.store') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
                                 <div class="row">
                                     <div class="col-md-6 mb-4">
@@ -43,10 +43,40 @@
                                             <span class="text-danger">{{ $errors->first('course_price') }}</span>
                                         @endif
                                     </div>
+                                    <div class="col-md-6 mb-4">
+                                        <label class="form-label">
+                                            Course Duration <span style="color:red;">*</span>
+                                        </label>
+                                    
+                                        <select name="duration_id" class="form-control" required>
+                                        <option value="">Select Duration</option>
+                                    
+                                        @foreach($durations as $d)
+                                            <option value="{{ $d->id }}"
+                                                {{ old('duration_id', $course->duration_id ?? '') == $d->id ? 'selected' : '' }}>
+                                                {{ $d->duration }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    
+                                    
+                                        @if($errors->has('duration_id'))
+                                            <span class="text-danger">{{ $errors->first('duration_id') }}</span>
+                                        @endif
+                                    </div>
+
+
+                                    <div class="col-md-6 mb-4">
+                                        <label class="form-label">Course Criteria <span style="color:red;">*</span></label>
+                                        <input type="text" name="course_criteria" class="form-control" value="{{ old('course_criteria', $course->course_criteria ?? '') }}">
+                                        @if($errors->has('course_criteria'))
+                                            <span class="text-danger">{{ $errors->first('course_criteria') }}</span>
+                                        @endif
+                                    </div>
 
                                     <div class="col-md-6 mb-4">
                                         <label class="form-label">Country <span style="color:red;">*</span></label>
-                                        <select name="country_id" class="form-control">
+                                        <select name="country_id" id="course_country_id" class="form-control">
                                             <option value="">Select Country</option>
                                             @foreach($countries as $c)
                                                 <option value="{{ $c->country_id }}" {{ old('country_id', $course->country_id ?? '') == $c->country_id ? 'selected' : '' }}>{{ $c->country_name }}</option>
@@ -59,11 +89,11 @@
 
                                     <div class="col-md-6 mb-4">
                                         <label class="form-label">University <span style="color:red;">*</span></label>
-                                        <select name="university_id" class="form-control">
-                                            <option value="">Select University</option>
+                                        <select name="university_id" id="course_university_id" class="form-control">
+                                           <!-- <option value="">Select University</option>
                                             @foreach($universities as $u)
                                                 <option value="{{ $u->university_id }}" {{ old('university_id', $course->university_id ?? '') == $u->university_id ? 'selected' : '' }}>{{ $u->university_name }}</option>
-                                            @endforeach
+                                            @endforeach-->
                                         </select>
                                         @if($errors->has('university_id'))
                                             <span class="text-danger">{{ $errors->first('university_id') }}</span>
@@ -72,16 +102,41 @@
 
                                     <div class="col-md-6 mb-4">
                                         <label class="form-label">Faculty <span style="color:red;">*</span></label>
-                                        <select name="faculty_id" class="form-control">
-                                            <option value="">Select Faculty</option>
+                                        <select name="faculty_id" id="course_faculty_id" class="form-control">
+                                            <!--<option value="">Select Faculty</option>
                                             @foreach($faculties as $f)
                                                 <option value="{{ $f->faculty_id }}" {{ old('faculty_id', $course->faculty_id ?? '') == $f->faculty_id ? 'selected' : '' }}>{{ $f->faculty_name }}</option>
-                                            @endforeach
+                                            @endforeach-->
                                         </select>
                                         @if($errors->has('faculty_id'))
                                             <span class="text-danger">{{ $errors->first('faculty_id') }}</span>
                                         @endif
                                     </div>
+                                    <div class="col-md-6 mb-4">
+                                        <label class="form-label">
+                                            Course Image <span style="color:red;">*</span>
+                                        </label>
+
+                                        <input type="file"
+                                            name="course_image"
+                                            class="form-control"
+                                            accept="image/*">
+
+                                        @if($errors->has('course_image'))
+                                            <span class="text-danger">{{ $errors->first('course_image') }}</span>
+                                        @endif
+
+                                        {{-- Show existing image in edit --}}
+                                        @if(!empty($course->course_image))
+                                            <div class="mt-2">
+                                                <img src="{{ asset('course_image/'.$course->course_image) }}"
+                                                    alt="Course Image"
+                                                    style="height:80px;border:1px solid #ddd;padding:4px;">
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    
 
                                     <div class="col-md-12 mb-4">
                                         <label class="form-label">Description</label>
@@ -107,4 +162,68 @@
 <script>
     CKEDITOR.replace('description');
 </script>
+<script>
+    function fillUniversitiesForCourse(countryId, selectedUniversityId = null) {
+        const $uni = $('#course_university_id');
+        const $fac = $('#course_faculty_id');
+
+        $uni.html('<option value="">Select University</option>');
+        $fac.html('<option value="">Select Faculty</option>');
+
+        if (!countryId) return;
+
+        $.get("{{ route('admin.universities.byCountry', ':id') }}".replace(':id', countryId), function(res) {
+            const list = Array.isArray(res) ? res : (res.data || []);
+
+            list.forEach(u => {
+                const selected = (selectedUniversityId && String(selectedUniversityId) === String(u.university_id)) ? 'selected' : '';
+                $uni.append(`<option value="${u.university_id}" ${selected}>${u.university_name}</option>`);
+            });
+
+            // if selected university exists, trigger faculty load
+            if (selectedUniversityId) {
+                fillFacultiesForCourse(selectedUniversityId, "{{ old('faculty_id', $course->faculty_id ?? '') }}");
+            }
+        });
+    }
+
+    function fillFacultiesForCourse(universityId, selectedFacultyId = null) {
+        const $fac = $('#course_faculty_id');
+        $fac.html('<option value="">Select Faculty</option>');
+
+        if (!universityId) return;
+
+        $.get("{{ route('admin.faculties.byUniversity', ':id') }}".replace(':id', universityId), function(res) {
+            const list = Array.isArray(res) ? res : (res.data || []);
+
+            list.forEach(f => {
+                const selected = (selectedFacultyId && String(selectedFacultyId) === String(f.faculty_id)) ? 'selected' : '';
+                $fac.append(`<option value="${f.faculty_id}" ${selected}>${f.faculty_name}</option>`);
+            });
+        });
+    }
+
+    // Country -> University
+    $('#course_country_id').on('change', function() {
+        fillUniversitiesForCourse($(this).val());
+    });
+
+    // University -> Faculty
+    $('#course_university_id').on('change', function() {
+        fillFacultiesForCourse($(this).val());
+    });
+
+    // ✅ On page load (Edit page): auto-load university/faculty dropdowns
+    $(document).ready(function() {
+        const countryId = "{{ old('country_id', $course->country_id ?? '') }}";
+        const universityId = "{{ old('university_id', $course->university_id ?? '') }}";
+
+        if (countryId) {
+            fillUniversitiesForCourse(countryId, universityId);
+        }
+    });
+</script>
+
+
 @endsection
+

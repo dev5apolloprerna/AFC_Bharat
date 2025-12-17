@@ -7,6 +7,8 @@ if (! function_exists('afc_base_path')) {
     {
         // Adjust to your real structure if needed
         $root = rtrim(base_path('../public_html/afc_bharat'), '/');
+        // $root = rtrim(public_path(), '/');
+
         return $append ? $root . '/' . ltrim($append, '/') : $root;
     }
 }
@@ -14,6 +16,7 @@ if (! function_exists('afc_base_url')) {
     function afc_base_url(string $append = ''): string
     {
         $base = rtrim(config('app.url'), '/') . '/afc_bharat';
+        // $base = rtrim(url('/'), '/');
         return $append ? $base . '/' . ltrim($append, '/') : $base;
     }
 }

@@ -8,6 +8,7 @@ use App\Models\Course;
 use App\Models\Country;
 use App\Models\University;
 use App\Models\Faculty;
+use Illuminate\Support\Facades\DB;
 
 class CourseController extends Controller
 {
@@ -37,23 +38,57 @@ class CourseController extends Controller
         $data['countries'] = Country::where('isDelete', 0)->orderBy('country_name')->get();
         $data['universities'] = University::where('isDelete', 0)->orderBy('university_name')->get();
         $data['faculties'] = Faculty::where('isDelete', 0)->orderBy('faculty_name')->get();
+        // 🔥 Fetch duration directly from DB
+        $data['durations'] = DB::table('duration_master')
+                                ->orderBy('duration')
+                                ->get();
         return view('admin.course.add_edit', $data);
     }
 
     public function store(Request $request)
     {
+        // dd($request->all());
+
         $request->validate([
             'course_name' => 'required|string|max:200',
             'course_price' => 'required|string|max:100',
+            'duration_id' => 'required|integer|exists:duration_master,id',
+            'course_criteria' => 'required|string|max:200',
+            'course_image' => 'required|mimes:jpg,jpeg,png,webp|max:2048',
             'description' => 'nullable|string',
             'university_id' => 'required|integer',
             'country_id' => 'required|integer',
             'faculty_id' => 'required|integer',
         ]);
+         // 🔽 PUT THIS CODE HERE
+        $imageName = null;
 
-        Course::create($request->only([
-            'course_name', 'course_price', 'description', 'university_id', 'country_id', 'faculty_id'
-        ]));
+        if ($request->hasFile('course_image')) {
+
+            $dir = afc_base_path('course_image');
+            ensure_dir($dir);
+
+            $file = $request->file('course_image');
+            $imageName = time().'_'.$file->getClientOriginalName();
+            $file->move($dir, $imageName);
+        }
+        // 🔼 END HERE
+
+
+        Course::create([
+            'course_name'     => $request->course_name,
+            'course_price'    => $request->course_price,
+            'duration_id'     => $request->duration_id,
+            'course_criteria' => $request->course_criteria,
+            'course_image'    => $imageName, 
+            'description'     => $request->description,
+            'university_id'   => $request->university_id,
+            'country_id'      => $request->country_id,
+            'faculty_id'      => $request->faculty_id,
+            'iStatus'         => 1,
+            'isDelete'        => 0,
+        ]);
+        // dd($course);
 
         return redirect()->route('admin.course.index')->with('success', 'Course added successfully.');
     }
@@ -64,27 +99,67 @@ class CourseController extends Controller
         $data['countries'] = Country::where('isDelete', 0)->orderBy('country_name')->get();
         $data['universities'] = University::where('isDelete', 0)->orderBy('university_name')->get();
         $data['faculties'] = Faculty::where('isDelete', 0)->orderBy('faculty_name')->get();
+        $data['durations'] = DB::table('duration_master')->orderBy('duration')->get();
         return view('admin.course.add_edit', $data);
     }
 
-    public function update(Request $request, $id)
+   public function update(Request $request, $id)
     {
+        // dd($request->all());
         $request->validate([
-            'course_name' => 'required|string|max:200',
-            'course_price' => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'university_id' => 'required|integer',
-            'country_id' => 'required|integer',
-            'faculty_id' => 'required|integer',
+            'course_name'      => 'required|string|max:200',
+            'course_price'     => 'required|string|max:100',
+            'duration_id' => 'required|integer|exists:duration_master,id',
+            'course_criteria'  => 'required|string|max:200',
+            'course_image' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
+            'description'      => 'nullable|string',
+            'university_id'    => 'required|integer',
+            'country_id'       => 'required|integer',
+            'faculty_id'       => 'required|integer',
         ]);
 
         $course = Course::findOrFail($id);
-        $course->update($request->only([
-            'course_name', 'course_price', 'description', 'university_id', 'country_id', 'faculty_id'
-        ]));
 
-        return redirect()->route('admin.course.index')->with('success', 'Course updated successfully.');
+        // 🔽 IMAGE UPDATE LOGIC
+        if ($request->hasFile('course_image')) {
+
+            // delete old image
+            if (!empty($course->course_image)) {
+                $oldPath = afc_base_path('course_image/'.$course->course_image);
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
+            }
+
+            // upload new image
+            $dir = afc_base_path('course_image');
+            ensure_dir($dir);
+
+            $file = $request->file('course_image');
+            $imageName = time().'_'.$file->getClientOriginalName();
+            $file->move($dir, $imageName);
+
+            $course->course_image = $imageName;
+        }
+
+        // 🔽 UPDATE OTHER FIELDS
+        $course->update([
+            'course_name'     => $request->course_name,
+            'course_price'    => $request->course_price,
+            'duration_id' => $request->duration_id,
+            'course_criteria' => $request->course_criteria,
+            'description'     => $request->description,
+            'university_id'   => $request->university_id,
+            'country_id'      => $request->country_id,
+            'faculty_id'      => $request->faculty_id,
+        ]);
+        
+
+        return redirect()
+            ->route('admin.course.index')
+            ->with('success', 'Course updated successfully.');
     }
+
 
     public function delete($id)
     {

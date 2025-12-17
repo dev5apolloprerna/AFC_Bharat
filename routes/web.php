@@ -21,7 +21,6 @@ use App\Http\Controllers\Admin\UniversityController;
 use App\Http\Controllers\Admin\FacultyController;
 use App\Http\Controllers\Admin\CourseController;
 
-
 Route::get('/clear-cache', function () {
     Artisan::call('cache:clear');
     Artisan::call('view:clear');
@@ -73,6 +72,19 @@ Route::middleware('auth')->prefix('users')->name('users.')->group(function () {
     Route::get('/import-users', [UserController::class, 'importUsers'])->name('import');
     Route::post('/upload-users', [UserController::class, 'uploadUsers'])->name('upload');
     Route::get('export/', [UserController::class, 'export'])->name('export');
+});
+
+
+Route::prefix('admin')->name('admin.')->group(function () {
+
+    // Country -> Universities
+    Route::get('universities/by-country/{country_id}', [UniversityController::class, 'byCountry'])
+        ->name('universities.byCountry');
+
+    // University -> Faculties
+    Route::get('faculties/by-university/{university_id}', [FacultyController::class, 'byUniversity'])
+        ->name('faculties.byUniversity');
+
 });
 
 
@@ -143,6 +155,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('faculty/delete/{id}', [FacultyController::class, 'delete'])->name('faculty.delete');
     Route::post('faculty/delete', [FacultyController::class, 'destroy'])->name('faculty.destroy'); // bulk delete
     Route::get('faculty/status/{id}', [FacultyController::class, 'status'])->name('faculty.status');
+    Route::get('/universities/by-country/{countryId}',[FacultyController::class, 'universitiesByCountry'])->name('admin.universities.byCountry');
+
 });
 
 
@@ -156,3 +170,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('course/delete', [CourseController::class, 'destroy'])->name('course.destroy'); // bulk delete
     Route::get('course/status/{id}', [CourseController::class, 'status'])->name('course.status');
 });
+
+
+//--------------------------------------------Font Routes------------------------------------------------//
+
+
+Route::get('/', [App\Http\Controllers\Front\FrontController::class, 'index'])->name('Frontindex');
+Route::get('/about', [App\Http\Controllers\Front\FrontController::class, 'about'])->name('Frontabout');
+Route::get('/study-destination', [App\Http\Controllers\Front\FrontController::class, 'destination'])->name('Frontdestination');
+Route::get('/study-program', [App\Http\Controllers\Front\FrontController::class, 'program'])->name('Frontprogram');
+Route::get('/gallery', [App\Http\Controllers\Front\FrontController::class, 'gallery'])->name('Frontgallery');
+Route::get('/contact', [App\Http\Controllers\Front\FrontController::class, 'contact'])->name('Frontcontact');
+Route::get('/apply-franchisee', [App\Http\Controllers\Front\FrontController::class, 'franchisee'])->name('Frontfranchisee');
+Route::get('/apply-admission', [App\Http\Controllers\Front\FrontController::class, 'admission'])->name('Frontadmission');
+
+
+
+// Route::post('/inquiry/store', [App\Http\Controllers\Front\FrontController::class, 'storeInquiry'])->name('inquiry.store');

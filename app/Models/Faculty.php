@@ -12,6 +12,7 @@ class Faculty extends Model
     protected $fillable = [
         'faculty_name',
         'country_id',
+        'university_id',
         'iStatus',
         'isDelete',
     ];
@@ -22,4 +23,9 @@ class Faculty extends Model
     {
         return $this->belongsTo(Country::class, 'country_id');
     }
+    public function university()
+    {
+        return $this->belongsTo(University::class, 'university_id');
+    }
+    
 }

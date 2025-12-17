@@ -142,4 +142,18 @@ class UniversityController extends Controller
 
         return redirect()->back()->with('success', 'Status updated.');
     }
+    public function byCountry($country_id)
+    {
+        $universities = University::select('university_id', 'university_name')
+            ->where('isDelete', 0)
+            ->where('country_id', $country_id)
+            ->orderBy('university_name')
+            ->get();
+
+        // IMPORTANT: return {data: []} (not plain array)
+        return response()->json([
+            'success' => true,
+            'data' => $universities
+        ]);
+    }
 }

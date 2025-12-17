@@ -26,9 +26,13 @@
                                     <th><input type="checkbox" id="select-all"></th>
                                     <th>Course</th>
                                     <th>Price</th>
+                                    <th>Duration</th>
+                                    <th>Criteria</th>
+                                    
                                     <th>University</th>
                                     <th>Faculty</th>
                                     <th>Country</th>
+                                    <th>Image</th>
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
@@ -39,9 +43,23 @@
                                         <td><input type="checkbox" class="record-checkbox" value="{{ $course->course_id }}"></td>
                                         <td>{{ $course->course_name }}</td>
                                         <td>{{ $course->course_price }}</td>
+                                        <td>
+                                            {{ DB::table('duration_master')->where('id', $course->duration_id)->value('duration') }}
+                                        </td>
+
+                                        <td>{{ $course->course_criteria }}</td>
                                         <td>{{ $course->university->university_name ?? '' }}</td>
                                         <td>{{ $course->faculty->faculty_name ?? '' }}</td>
                                         <td>{{ $course->country->country_name ?? '' }}</td>
+                                        <td>
+                                            @if(!empty($course->course_image))
+                                                <img src="{{ afc_base_url('course_image/'.$course->course_image) }}"
+                                                    alt="{{ $course->course_name }}"
+                                                    style="height:50px;width:auto;border:1px solid #ddd;padding:3px;">
+                                            @else
+                                                <span class="text-muted">No Image</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <a href="{{ route('admin.course.status', $course->course_id) }}">
                                                 <button class="btn btn-sm toggle-status {{ $course->iStatus ? 'btn-success' : 'btn-warning' }}">
