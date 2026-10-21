@@ -164,8 +164,8 @@ class CourseController extends Controller
     public function delete($id)
     {
         $course = Course::findOrFail($id);
-        $course->isDelete = 1;
-        $course->save();
+        // $course->isDelete = 1;
+        $course->delete();
 
         return redirect()->back()->with('success', 'Course deleted successfully.');
     }
@@ -173,7 +173,7 @@ class CourseController extends Controller
     public function destroy(Request $request)
     {
         if ($request->has('ids')) {
-            Course::whereIn('course_id', $request->ids)->update(['isDelete' => 1]);
+            Course::whereIn('course_id', $request->ids)->delete();
         }
         return response()->json(['success' => 'Selected courses deleted.']);
     }
