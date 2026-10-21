@@ -112,8 +112,8 @@ class UniversityController extends Controller
         if ($uni->university_logo && file_exists(afc_base_path('university_logo/' . $uni->university_logo))) {
             unlink(afc_base_path('university_logo/' . $uni->university_logo));
         }
-        $uni->isDelete = 1;
-        $uni->save();
+        // $uni->isDelete = 1;
+        $uni->delete();
 
         return redirect()->back()->with('success', 'University deleted successfully.');
     }
@@ -126,8 +126,8 @@ class UniversityController extends Controller
                 if ($uni->university_logo && file_exists(afc_base_path('university_logo/' . $uni->university_logo))) {
                     unlink(afc_base_path('university_logo/' . $uni->university_logo));
                 }
-                $uni->isDelete = 1;
-                $uni->save();
+                // $uni->isDelete = 1;
+                $uni->delete();
             }
         }
 

@@ -54,13 +54,13 @@ class VideoGalleryController extends Controller
 
     public function delete(Request $request)
     {
-        VideoGallery::where('video_Id', $request->id)->update(['isDelete' => 1]);
+        VideoGallery::where('video_Id', $request->id)->delete();
         return response()->json(['status' => 'success']);
     }
 
     public function bulkDelete(Request $request)
     {
-        VideoGallery::whereIn('video_Id', $request->ids)->update(['isDelete' => 1]);
+        VideoGallery::whereIn('video_Id', $request->ids)->delete();
         return response()->json(['status' => 'success']);
     }
 }

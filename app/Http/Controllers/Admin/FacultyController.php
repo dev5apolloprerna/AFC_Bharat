@@ -77,8 +77,8 @@ class FacultyController extends Controller
     public function delete($id)
     {
         $faculty = Faculty::findOrFail($id);
-        $faculty->isDelete = 1;
-        $faculty->save();
+        // $faculty->isDelete = 1;
+        $faculty->delete();
 
         return redirect()->back()->with('success', 'Faculty deleted successfully.');
     }
@@ -86,7 +86,7 @@ class FacultyController extends Controller
     public function destroy(Request $request)
     {
         if ($request->has('ids')) {
-            Faculty::whereIn('faculty_id', $request->ids)->update(['isDelete' => 1]);
+            Faculty::whereIn('faculty_id', $request->ids)->delete();
         }
 
         return response()->json(['success' => 'Selected faculties deleted.']);

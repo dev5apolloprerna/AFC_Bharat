@@ -56,8 +56,8 @@ class CountryController extends Controller
     public function delete($id)
     {
         $country = Country::findOrFail($id);
-        $country->isDelete = 1;
-        $country->save();
+        // $country->isDelete = 1;
+        $country->delete();
 
         return redirect()->back()->with('success', 'Country deleted successfully.');
     }
@@ -65,7 +65,7 @@ class CountryController extends Controller
     public function destroy(Request $request)
     {
         if ($request->has('ids')) {
-            Country::whereIn('country_id', $request->ids)->update(['isDelete' => 1]);
+            Country::whereIn('country_id', $request->ids)->delete();
         }
 
         return response()->json(['success' => 'Selected countries deleted.']);
